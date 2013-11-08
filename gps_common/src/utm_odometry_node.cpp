@@ -9,10 +9,12 @@
 #include <sensor_msgs/NavSatFix.h>
 #include <gps_common/conversions.h>
 #include <nav_msgs/Odometry.h>
+#include <visualization_msgs/Marker.h>
+#include <tf/tf.h>
 
 using namespace gps_common;
 
-static ros::Publisher odom_pub;
+static ros::Publisher odom_pub, cov_marker_pub;
 std::string frame_id, child_frame_id;
 double rot_cov;
 
@@ -76,6 +78,45 @@ void callback(const sensor_msgs::NavSatFixConstPtr& fix) {
     ROS_DEBUG("UTM publishing at time %f", ros::Time::now().toSec());
     
     odom_pub.publish(odom);
+    
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = odom.header.frame_id;
+    marker.header.stamp = fix->header.stamp;
+    marker.ns = "utm_odometry_node";
+    marker.id = 0;
+
+    // Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+    marker.type = visualization_msgs::Marker::SPHERE;
+
+    // Set the marker action.  Options are ADD and DELETE
+    marker.action = visualization_msgs::Marker::ADD;
+
+    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+    marker.pose.position.x = odom.pose.pose.position.x;
+    marker.pose.position.y = odom.pose.pose.position.y;
+    marker.pose.position.z = odom.pose.pose.position.z;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+
+    // Set the scale of the marker -- 1x1x1 here means 1m on a side
+    marker.scale.x = fix->position_covariance[0];
+    marker.scale.y = fix->position_covariance[4];
+    //marker.scale.z = 0.01;
+    marker.scale.z = fix->position_covariance[8];
+    
+
+    // Set the color -- be sure to set alpha to something non-zero!
+    marker.color.r = 0.0f;
+    marker.color.g = 0.0f;
+    marker.color.b = 1.0f;
+    marker.color.a = 0.5f;
+
+    marker.lifetime = ros::Duration();
+
+    // Publish the marker
+    cov_marker_pub.publish(marker);
   }
 }
 
@@ -89,6 +130,8 @@ int main (int argc, char **argv) {
   priv_node.param<double>("rot_covariance", rot_cov, 99999.0);
 
   odom_pub = node.advertise<nav_msgs::Odometry>("odom", 10);
+  
+  cov_marker_pub = node.advertise<visualization_msgs::Marker>("odom_covariance", 10);
 
   ros::Subscriber fix_sub = node.subscribe("fix", 10, callback);
 
