@@ -1,0 +1,71 @@
+<launch>
+  <!-- Activar si estamos en reproducción de bags: -->
+  <!-- param name="/use_sim_time" value="True" / -->
+
+  <!-- node pkg="tf" type="static_transform_publisher" name="imu_to_base_footprint" 
+    args="-1.68 0 -0.2 0 -0.261799388 0 /base_footprint /imu 100" / -->
+
+  <!-- node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link" 
+    args="0 0 0 0 0 0 /laser /base_link 100" / -->
+
+  <!-- node pkg="tf" type="static_transform_publisher" name="base_to_gps" 
+    args="0 0 0 0 0 0 /odom_combined /gps 100" / -->
+
+  <!-- node pkg="tf" type="static_transform_publisher" name="local_odom_combined_to_odom_combined" 
+    args="-3151298.687204 370601.484711 -576.623610 0.026636 0.011834 0.675438 0.736840 /local_odom_combined /odom_combined 100" / -->
+
+  <!-- node pkg="tf" type="static_transform_publisher" name="local_odom_combined_to_odom_combined" 
+    args="-3151298.687204 370601.484711 -576.623610 0 0 0 /local_odom_combined /odom_combined 100" /-->
+
+  <node pkg="tf" type="static_transform_publisher" name="local_odom_combined_to_odom_combined" 
+    args="3150127.75863 -377282.445852 41.788 0 0 0 /utm /mapa 100" />
+
+  <!-- node pkg="tf" type="static_transform_publisher" name="odom_combined_to_mapa" 
+    args="3151341.54114 -370603.596701 576.621000 0 0 0 /odom_combined /mapa 100" / -->
+
+  <!-- node pkg="gpscat" type="gpscat" name="gpscat" args="-D 10 -c 0.2 /home/daniel/Proyectos/ROS/ull-ros-pkg/demos/dump-gpsd-3.5-sin-parche-NMEA_MAX.log" output="screen" / -->
+
+  <node name="gpsd_client" pkg="gpsd_client" type="gpsd_client">
+    <remap from="fix" to="/gps/fix" />
+    <param name="use_gps_time" value="false" />
+  </node>
+  
+  <node name="utm_odometry_node" pkg="gps_common" type="utm_odometry_node">
+    <remap from="odom" to="gps" />
+    <remap from="fix" to="/gps/fix" />
+    <param name="rot_covariance" value="1.0e+300" />
+    <param name="frame_id" value="/utm" />
+    <param name="child_frame_id" value="/gps" />
+  </node>
+
+  <!-- node name="mti_node" pkg="lse_xsens_mti" type="mti_node">
+    <remap from="/imu/data" to="/imu_data" />
+    <param name="frame_id" value="imu" />
+  </node -->
+
+  <!-- node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+    <param name="freq" value="100.0"/>
+    <param name="sensor_timeout" value="10"/>
+    <param name="publish_tf" value="true"/>
+    
+    <remap from="vo" to="gps" />
+
+    <param name="odom_used" value="true"/>
+    <param name="imu_used" value="true"/>
+    <param name="vo_used" value="true"/>
+    
+    <param name="output_frame" value="odom_combined" />
+    <param name="debug" value="true" />
+    <param name="self_diagnose" value="true" />
+  </node -->
+  
+
+  <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find gps_common)/launch/gps-utm-y-tf-a-mapa.vcg"/> -->
+  
+  <!-- <node pkg="gpsd_viewer" type="gpsd_viewer" name="gpsd_viewer" output="log">
+     <remap from="fix" to="/extended_fix"/>
+  </node> -->
+
+  <!-- <node pkg="rxtools" type="rxconsole" name="rxconsole" output="log" /> -->
+
+</launch>
