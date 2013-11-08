@@ -17,6 +17,8 @@ using namespace gps_common;
 static ros::Publisher odom_pub, cov_marker_pub;
 std::string frame_id, child_frame_id;
 double rot_cov;
+double rotacion_incremental, tmp_rot, tmp_rot_mod;
+tf::Quaternion tmp_quat;
 
 void callback(const sensor_msgs::NavSatFixConstPtr& fix) {
   if (fix->status.status == sensor_msgs::NavSatStatus::STATUS_NO_FIX) {
@@ -49,10 +51,17 @@ void callback(const sensor_msgs::NavSatFixConstPtr& fix) {
     odom.pose.pose.position.y = -easting;
     odom.pose.pose.position.z = fix->altitude;
     
-    odom.pose.pose.orientation.x = 1;
-    odom.pose.pose.orientation.y = 0;
-    odom.pose.pose.orientation.z = 0;
-    odom.pose.pose.orientation.w = 0;
+    tmp_rot = tmp_rot + 0.1;
+    tmp_rot_mod = fmod(tmp_rot, 3.1415);
+
+    tmp_quat = tf::createQuaternionFromRPY(0, 0, 0);
+    tf::quaternionTFToMsg(tmp_quat, odom.pose.pose.orientation);
+    
+//    odom.pose.pose.orientation.x = tmp_quat.getX;
+//    odom.pose.pose.orientation.y = tmp_quat.getY;
+//    odom.pose.pose.orientation.z = tmp_quat.getZ;
+//    odom.pose.pose.orientation.w = tmp_quat.getW;
+    //ROS_INFO("tmp_quat =  %f, %f, %f, %f\n", tmp_quat);
     
     // Use ENU covariance to build XYZRPY covariance
     boost::array<double, 36> covariance = {{
@@ -128,6 +137,9 @@ int main (int argc, char **argv) {
   priv_node.param<std::string>("frame_id", frame_id, "");
   priv_node.param<std::string>("child_frame_id", child_frame_id, "");
   priv_node.param<double>("rot_covariance", rot_cov, 99999.0);
+  priv_node.param<double>("rotacion_incremental", rotacion_incremental, 0);
+  tmp_rot = rotacion_incremental;
+  
 
   odom_pub = node.advertise<nav_msgs::Odometry>("odom", 10);
   
