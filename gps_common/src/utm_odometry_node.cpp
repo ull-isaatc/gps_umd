@@ -18,11 +18,12 @@ double rot_cov;
 
 void callback(const sensor_msgs::NavSatFixConstPtr& fix) {
   if (fix->status.status == sensor_msgs::NavSatStatus::STATUS_NO_FIX) {
-    ROS_INFO("No fix.");
+    ROS_WARN("No fix.");
     return;
   }
 
   if (fix->header.stamp == ros::Time(0)) {
+    ROS_WARN("Fix time is 0.");
     return;
   }
 
@@ -42,8 +43,8 @@ void callback(const sensor_msgs::NavSatFixConstPtr& fix) {
 
     odom.child_frame_id = child_frame_id;
 
-    odom.pose.pose.position.x = easting;
-    odom.pose.pose.position.y = northing;
+    odom.pose.pose.position.x = northing;
+    odom.pose.pose.position.y = -easting;
     odom.pose.pose.position.z = fix->altitude;
     
     odom.pose.pose.orientation.x = 1;
@@ -71,7 +72,9 @@ void callback(const sensor_msgs::NavSatFixConstPtr& fix) {
     }};
 
     odom.pose.covariance = covariance;
-
+    
+    ROS_DEBUG("UTM publishing at time %f", ros::Time::now().toSec());
+    
     odom_pub.publish(odom);
   }
 }
