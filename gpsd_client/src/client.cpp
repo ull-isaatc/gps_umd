@@ -249,7 +249,7 @@ class GPSDClient {
        
       //TODO: añadir aqui la comprobación que se reporta error elíptico, y si es así convertilo a matriz de covarianza (con valores fuera de la diagonal a partir de la orientación de la elipse), que aporta aun más información
       if (isnan(p->gst.smajor_deviation))
-        ROS_WARN("GPS not reporting oriented error elipse, falling back to lat-long oriented standard deviation.");  
+        ROS_WARN("GPS not reporting oriented error ellipse, falling back to lat-long oriented standard deviation.");  
 
       // PATCH: miramos primero si se reportaron valores de error en desviación estándar en m.
       

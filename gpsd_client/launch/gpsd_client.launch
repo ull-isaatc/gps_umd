@@ -1,0 +1,11 @@
+<launch>
+
+  <node pkg="gpsd_client" type="gpsd_not_daemon.sh" name="gpsd_not_daemon" output="log" />
+
+  <node name="gpsd_client" pkg="gpsd_client" type="gpsd_client">
+    <remap from="fix" to="/gps/fix" />
+    <remap from="extended_fix" to="/gps/extended_fix" />
+    <param name="use_gps_time" value="false" />
+  </node>
+  
+</launch>
