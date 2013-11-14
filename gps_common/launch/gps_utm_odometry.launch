@@ -5,9 +5,10 @@
   <!-- NavsatFix to Odom UTM conversion -->
   <node name="utm_odometry_node" pkg="gps_common" type="utm_odometry_node">
     <remap from="odom" to="gps/odom" />
-    <remap from="fix" to="/gps/fix" />
+    <!-- remap from="fix" to="/gps/fix" / -->
+    <remap from="fix" to="/gps/extended_fix" />
     <param name="rot_covariance" value="1.0e+300" />
-    <param name="frame_id" value="/utm" />
-    <param name="child_frame_id" value="/gps" />
+    <param name="frame_id" value="utm" />
+    <param name="child_frame_id" value="gps" />
   </node>
 </launch>
