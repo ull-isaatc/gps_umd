@@ -1,6 +1,6 @@
 #!/bin/sh
 
-GPS_PORT="/dev/ttyMI4"
+GPS_PORT="/dev/ttyMI1"
 
 #echo "%dM%dm" > $GPS_PORT
 #sleep 1
